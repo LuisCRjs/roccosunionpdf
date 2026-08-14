@@ -26,6 +26,20 @@ public sealed class ExpedientValidatorTests : IDisposable
         Assert.Equal(6, result.Errors.Count);
     }
 
+    [Fact]
+    public void Validate_AcceptsMultipleQuoteFiles()
+    {
+        var documents = CreateDocuments().ToList();
+        var additionalQuote = Path.Combine(temporaryDirectory, "Quote-2.pdf");
+        File.WriteAllText(additionalQuote, "test");
+        documents.Add(new DocumentInput(DocumentType.Quote, additionalQuote));
+
+        var result = new ExpedientValidator().Validate("OS-5812", "123", documents);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
     private IReadOnlyList<DocumentInput> CreateDocuments() =>
         DocumentOrder.Required.Select(type =>
         {

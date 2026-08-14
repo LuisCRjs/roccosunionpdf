@@ -132,10 +132,12 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var settings = await settingsService.LoadAsync();
             var destination = settings.ExpedientsDirectory ?? fileService.ExpedientsDirectory;
-            var inputs = Documents.Select(slot => new DocumentInput(
-                slot.Type,
-                slot.FilePath!,
-                slot.IsTemporary)).ToArray();
+            var inputs = Documents
+                .SelectMany(slot => slot.Files.Select(file => new DocumentInput(
+                    slot.Type,
+                    file.Path,
+                    file.IsTemporary)))
+                .ToArray();
 
             var result = await generationService.GenerateAsync(new ExpedientGenerationRequest(
                 Date,
@@ -214,14 +216,29 @@ public sealed partial class MainViewModel : ObservableObject
         slot.IsBusy = true;
         try
         {
-            var path = await filePickerService.PickPdfAsync();
-            if (path is null)
+            var paths = await filePickerService.PickPdfsAsync(slot.AllowsMultipleFiles);
+            if (paths.Count == 0)
             {
                 return;
             }
 
-            await pdfService.ValidatePdfAsync(path);
-            await ReplaceSlotFileAsync(slot, path, temporary: false);
+            foreach (var path in paths)
+            {
+                await pdfService.ValidatePdfAsync(path);
+            }
+
+            if (slot.AllowsMultipleFiles)
+            {
+                var combinedFiles = slot.Files
+                    .Concat(paths.Select(path => new DocumentSlotFile(path, IsTemporary: false)))
+                    .DistinctBy(file => file.Path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                await ReplaceSlotFilesAsync(slot, combinedFiles);
+            }
+            else
+            {
+                await ReplaceSlotFilesAsync(slot, [new DocumentSlotFile(paths[0], IsTemporary: false)]);
+            }
         }
         catch (Exception exception)
         {
@@ -286,7 +303,17 @@ public sealed partial class MainViewModel : ObservableObject
             }
 
             await pdfService.ValidatePdfAsync(normalizedPath);
-            await ReplaceSlotFileAsync(slot, normalizedPath, temporary: true);
+            if (slot.AllowsMultipleFiles)
+            {
+                slot.AddFile(normalizedPath, temporary: true);
+                ownedTemporaryFiles.Add(normalizedPath);
+            }
+            else
+            {
+                await ReplaceSlotFilesAsync(
+                    slot,
+                    [new DocumentSlotFile(normalizedPath, IsTemporary: true)]);
+            }
         }
         catch (Exception exception)
         {
@@ -298,8 +325,13 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private Task OpenSlotAsync(DocumentSlotViewModel slot) =>
-        slot.FilePath is null ? Task.CompletedTask : TryOpenAsync(slot.FilePath);
+    private async Task OpenSlotAsync(DocumentSlotViewModel slot)
+    {
+        foreach (var file in slot.Files)
+        {
+            await TryOpenAsync(file.Path);
+        }
+    }
 
     private async Task TryOpenAsync(string path)
     {
@@ -317,28 +349,35 @@ public sealed partial class MainViewModel : ObservableObject
     private async Task RemoveSlot(DocumentSlotViewModel slot)
     {
         ClearFeedback();
-        if (slot.IsTemporary && slot.FilePath is not null)
-        {
-            await fileService.DeleteTemporaryFilesAsync([slot.FilePath]);
-            ownedTemporaryFiles.Remove(slot.FilePath);
-        }
+        var temporaryPaths = slot.Files
+            .Where(file => file.IsTemporary)
+            .Select(file => file.Path)
+            .ToArray();
+        await fileService.DeleteTemporaryFilesAsync(temporaryPaths);
+        ownedTemporaryFiles.ExceptWith(temporaryPaths);
 
         slot.Clear();
     }
 
-    private async Task ReplaceSlotFileAsync(DocumentSlotViewModel slot, string path, bool temporary)
+    private async Task ReplaceSlotFilesAsync(
+        DocumentSlotViewModel slot,
+        IReadOnlyCollection<DocumentSlotFile> replacementFiles)
     {
-        if (slot.IsTemporary && slot.FilePath is not null &&
-            !string.Equals(slot.FilePath, path, StringComparison.OrdinalIgnoreCase))
-        {
-            await fileService.DeleteTemporaryFilesAsync([slot.FilePath]);
-            ownedTemporaryFiles.Remove(slot.FilePath);
-        }
+        var replacementPaths = replacementFiles
+            .Select(file => file.Path)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var discardedTemporaryPaths = slot.Files
+            .Where(file => file.IsTemporary && !replacementPaths.Contains(file.Path))
+            .Select(file => file.Path)
+            .ToArray();
 
-        slot.SetFile(path, temporary);
-        if (temporary)
+        await fileService.DeleteTemporaryFilesAsync(discardedTemporaryPaths);
+        ownedTemporaryFiles.ExceptWith(discardedTemporaryPaths);
+
+        slot.SetFiles(replacementFiles);
+        foreach (var file in replacementFiles.Where(file => file.IsTemporary))
         {
-            ownedTemporaryFiles.Add(path);
+            ownedTemporaryFiles.Add(file.Path);
         }
     }
 

@@ -5,7 +5,9 @@ namespace DocumentManager.WinUI.Services;
 
 public sealed class WindowsFilePickerService : IFilePickerService
 {
-    public async Task<string?> PickPdfAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> PickPdfsAsync(
+        bool allowMultiple,
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var picker = new FileOpenPicker
@@ -16,9 +18,15 @@ public sealed class WindowsFilePickerService : IFilePickerService
         picker.FileTypeFilter.Add(".pdf");
         WinRT.Interop.InitializeWithWindow.Initialize(picker, App.WindowHandle);
 
+        if (allowMultiple)
+        {
+            var files = await picker.PickMultipleFilesAsync();
+            cancellationToken.ThrowIfCancellationRequested();
+            return files.Select(file => file.Path).ToArray();
+        }
+
         var file = await picker.PickSingleFileAsync();
         cancellationToken.ThrowIfCancellationRequested();
-        return file?.Path;
+        return file is null ? [] : [file.Path];
     }
 }
-

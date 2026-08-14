@@ -29,13 +29,15 @@ public sealed class ExpedientValidator
             {
                 errors.Add($"Falta el documento: {GetDisplayName(type)}.");
             }
-            else if (matches.Length > 1)
+            else if (type != DocumentType.Quote && matches.Length > 1)
             {
                 errors.Add($"El documento {GetDisplayName(type)} está duplicado.");
             }
-            else if (string.IsNullOrWhiteSpace(matches[0].SourcePath) || !File.Exists(matches[0].SourcePath))
+            else if (matches.Any(document =>
+                         string.IsNullOrWhiteSpace(document.SourcePath) ||
+                         !File.Exists(document.SourcePath)))
             {
-                errors.Add($"No se encontró el archivo de {GetDisplayName(type)}.");
+                errors.Add($"No se encontró uno de los archivos de {GetDisplayName(type)}.");
             }
         }
 

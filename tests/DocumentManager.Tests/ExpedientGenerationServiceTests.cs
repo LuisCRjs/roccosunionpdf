@@ -25,6 +25,7 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
         var documents = new[]
         {
             CreateDocument(DocumentType.Quote, 300, inputDirectory),
+            CreateDocument(DocumentType.Quote, 350, inputDirectory),
             CreateDocument(DocumentType.ServiceOrder, 100, inputDirectory),
             CreateDocument(DocumentType.MaintenanceReport, 400, inputDirectory),
             CreateDocument(DocumentType.WorkOrder, 200, inputDirectory),
@@ -57,12 +58,12 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
         var pageWidths = Enumerable.Range(0, merged.PageCount)
             .Select(index => merged.Pages[index].Width.Point)
             .ToArray();
-        Assert.Equal([100d, 200d, 300d, 400d], pageWidths);
+        Assert.Equal([100d, 200d, 300d, 350d, 400d], pageWidths);
     }
 
     private static DocumentInput CreateDocument(DocumentType type, double pageWidth, string directory)
     {
-        var path = Path.Combine(directory, $"{type}.pdf");
+        var path = Path.Combine(directory, $"{type}-{pageWidth}.pdf");
         using var document = new PdfDocument();
         var page = document.AddPage();
         page.Width = XUnit.FromPoint(pageWidth);

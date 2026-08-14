@@ -11,6 +11,12 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         Title = "Gestor de expedientes 1.02";
+        var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "AppIcon.ico");
+        if (File.Exists(iconPath))
+        {
+            AppWindow.SetIcon(iconPath);
+        }
+
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1180, 820));
         Navigation.SelectedItem = Navigation.MenuItems[0];
         ContentFrame.Navigate(typeof(MainPage));

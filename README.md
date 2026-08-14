@@ -2,11 +2,11 @@
 
 Versión actual: **1.02**
 
-Aplicación de escritorio local para Windows 11 que reúne cuatro documentos en un único PDF, siempre en este orden:
+Aplicación de escritorio local para Windows 11 que reúne cuatro tipos de documento en un único PDF, siempre en este orden:
 
 1. Orden de servicio
 2. Orden de trabajo
-3. Cotización
+3. Cotización (uno o varios archivos)
 4. Reporte de mantenimiento
 
 ## Stack
@@ -55,6 +55,8 @@ REPORTE MANTENIMIENTO EXTERNO123 OS-5812.pdf
 ```
 
 El folio interno mostrado es una vista previa. La secuencia de SQLite solamente avanza cuando el PDF ya fue generado y el registro se guarda correctamente.
+
+La sección Cotización permite seleccionar varios PDF a la vez, agregar más archivos o anexar escaneos adicionales. Todas las cotizaciones se incorporan consecutivamente, conservando su orden de selección, antes del reporte de mantenimiento.
 
 ## Abrir en Visual Studio
 

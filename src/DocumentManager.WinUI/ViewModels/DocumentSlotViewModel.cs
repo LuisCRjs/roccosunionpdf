@@ -6,6 +6,7 @@ namespace DocumentManager.WinUI.ViewModels;
 
 public sealed partial class DocumentSlotViewModel : ObservableObject
 {
+    private readonly List<DocumentSlotFile> files = [];
     private readonly Func<DocumentSlotViewModel, Task> selectFile;
     private readonly Func<DocumentSlotViewModel, Task> scan;
     private readonly Func<DocumentSlotViewModel, Task> open;
@@ -35,38 +36,58 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
 
     public string Title { get; }
 
-    public bool IsReady => !string.IsNullOrWhiteSpace(FilePath);
+    public bool AllowsMultipleFiles => Type == DocumentType.Quote;
 
-    public string FileName => IsReady ? Path.GetFileName(FilePath!) : string.Empty;
+    public string SelectButtonText => AllowsMultipleFiles ? "Seleccionar archivos" : "Seleccionar archivo";
 
-    public string StatusText => IsBusy ? "Procesando..." : IsReady ? "Documento listo" : "Documento pendiente";
+    public string ReadySelectButtonText => AllowsMultipleFiles ? "Agregar archivos" : "Cambiar archivo";
+
+    public bool CanAddScannedFile => AllowsMultipleFiles && IsReady;
+
+    public IReadOnlyList<DocumentSlotFile> Files => files;
+
+    public bool IsReady => files.Count > 0;
+
+    public string FileName => files.Count switch
+    {
+        0 => string.Empty,
+        1 => Path.GetFileName(files[0].Path),
+        _ => $"{files.Count} cotizaciones: {string.Join(", ", files.Select(file => Path.GetFileName(file.Path)))}",
+    };
+
+    public string StatusText => IsBusy
+        ? "Procesando..."
+        : files.Count > 1
+            ? $"{files.Count} documentos listos"
+            : IsReady
+                ? "Documento listo"
+                : "Documento pendiente";
 
     public bool CanInteract => !IsBusy;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsReady))]
-    [NotifyPropertyChangedFor(nameof(FileName))]
-    [NotifyPropertyChangedFor(nameof(StatusText))]
-    public partial string? FilePath { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
     [NotifyPropertyChangedFor(nameof(CanInteract))]
     public partial bool IsBusy { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsTemporary { get; set; }
-
-    public void SetFile(string path, bool temporary)
+    public void SetFiles(IEnumerable<DocumentSlotFile> selectedFiles)
     {
-        FilePath = path;
-        IsTemporary = temporary;
+        ArgumentNullException.ThrowIfNull(selectedFiles);
+        files.Clear();
+        files.AddRange(selectedFiles);
+        NotifyFilesChanged();
+    }
+
+    public void AddFile(string path, bool temporary)
+    {
+        files.Add(new DocumentSlotFile(path, temporary));
+        NotifyFilesChanged();
     }
 
     public void Clear()
     {
-        FilePath = null;
-        IsTemporary = false;
+        files.Clear();
+        NotifyFilesChanged();
     }
 
     partial void OnIsBusyChanged(bool value)
@@ -77,8 +98,13 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
         RemoveCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnFilePathChanged(string? value)
+    private void NotifyFilesChanged()
     {
+        OnPropertyChanged(nameof(Files));
+        OnPropertyChanged(nameof(IsReady));
+        OnPropertyChanged(nameof(CanAddScannedFile));
+        OnPropertyChanged(nameof(FileName));
+        OnPropertyChanged(nameof(StatusText));
         OpenCommand.NotifyCanExecuteChanged();
         RemoveCommand.NotifyCanExecuteChanged();
     }
@@ -99,3 +125,5 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
 
     private bool CanRemove() => CanInteract && IsReady;
 }
+
+public sealed record DocumentSlotFile(string Path, bool IsTemporary);

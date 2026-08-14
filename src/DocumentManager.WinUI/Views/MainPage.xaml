@@ -111,15 +111,18 @@
                                                            Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <Button Content="Seleccionar archivo"
+                                                <Button Content="{x:Bind SelectButtonText}"
                                                         Command="{x:Bind SelectFileCommand}"
                                                         Visibility="{x:Bind IsReady, Converter={StaticResource InverseBooleanToVisibilityConverter}, Mode=OneWay}" />
                                                 <Button Content="Escanear"
                                                         Command="{x:Bind ScanCommand}"
                                                         Visibility="{x:Bind IsReady, Converter={StaticResource InverseBooleanToVisibilityConverter}, Mode=OneWay}" />
-                                                <Button Content="Cambiar archivo"
+                                                <Button Content="{x:Bind ReadySelectButtonText}"
                                                         Command="{x:Bind SelectFileCommand}"
                                                         Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                <Button Content="Escanear otra"
+                                                        Command="{x:Bind ScanCommand}"
+                                                        Visibility="{x:Bind CanAddScannedFile, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                                                 <Button Content="Ver"
                                                         Command="{x:Bind OpenCommand}"
                                                         Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
