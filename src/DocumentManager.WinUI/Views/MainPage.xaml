@@ -1,0 +1,147 @@
+<Page
+    x:Class="DocumentManager.WinUI.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:DocumentManager.WinUI.ViewModels"
+    Loaded="Page_Loaded">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ScrollViewer>
+            <Grid MaxWidth="920" Padding="40,32,40,48" HorizontalAlignment="Center">
+                <StackPanel Spacing="24">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Nuevo expediente" Style="{ThemeResource TitleTextBlockStyle}" />
+                        <TextBlock Text="Reúne los cuatro documentos y genera un solo PDF en el orden correcto."
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <InfoBar IsOpen="{Binding HasError}"
+                             Severity="Error"
+                             Title="No se pudo completar la operación"
+                             Message="{Binding ErrorMessage}" />
+
+                    <Border Visibility="{Binding IsCompleted, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Padding="28"
+                            CornerRadius="12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1">
+                        <StackPanel HorizontalAlignment="Center" Spacing="14">
+                            <FontIcon Glyph="&#xE73E;" FontSize="42" Foreground="#107C10" />
+                            <TextBlock Text="Expediente generado correctamente"
+                                       Style="{ThemeResource SubtitleTextBlockStyle}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding InternalFolio}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text="{Binding ServiceOrderFolio}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                <Button Content="Abrir PDF" Command="{Binding OpenGeneratedCommand}" Style="{ThemeResource AccentButtonStyle}" />
+                                <Button Content="Nuevo expediente" Command="{Binding StartNewCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Visibility="{Binding IsCompleted, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                Spacing="24">
+                        <Border Padding="24"
+                                CornerRadius="12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                            <Grid ColumnSpacing="24" RowSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         Header="Folio orden de servicio"
+                                         PlaceholderText="Ej. OS-5812"
+                                         MaxLength="100"
+                                         Text="{Binding ServiceOrderFolio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <StackPanel Grid.Column="1" Spacing="7">
+                                    <TextBlock Text="Folio interno" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding InternalFolio}" FontSize="18" FontWeight="SemiBold" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="7">
+                                    <TextBlock Text="Fecha" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{Binding DateText}" FontSize="18" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding Documents}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:DocumentSlotViewModel">
+                                    <Border Margin="0,0,0,12"
+                                            Padding="20"
+                                            CornerRadius="10"
+                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1">
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="38" Height="38" CornerRadius="19" Background="{ThemeResource AccentFillColorSecondaryBrush}">
+                                                <TextBlock Text="{x:Bind Position}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Title}" FontSize="17" FontWeight="SemiBold" />
+                                                <StackPanel Orientation="Horizontal" Spacing="7">
+                                                    <FontIcon Glyph="&#xE73E;" FontSize="14" Foreground="#107C10"
+                                                              Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                    <FontIcon Glyph="&#xE823;" FontSize="14"
+                                                              Visibility="{x:Bind IsReady, Converter={StaticResource InverseBooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                    <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </StackPanel>
+                                                <TextBlock Text="{x:Bind FileName, Mode=OneWay}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <Button Content="Seleccionar archivo"
+                                                        Command="{x:Bind SelectFileCommand}"
+                                                        Visibility="{x:Bind IsReady, Converter={StaticResource InverseBooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                <Button Content="Escanear"
+                                                        Command="{x:Bind ScanCommand}"
+                                                        Visibility="{x:Bind IsReady, Converter={StaticResource InverseBooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                <Button Content="Cambiar archivo"
+                                                        Command="{x:Bind SelectFileCommand}"
+                                                        Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                <Button Content="Ver"
+                                                        Command="{x:Bind OpenCommand}"
+                                                        Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                                <Button Content="Eliminar"
+                                                        Command="{x:Bind RemoveCommand}"
+                                                        Visibility="{x:Bind IsReady, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button Content="GENERAR EXPEDIENTE"
+                                Command="{Binding GenerateCommand}"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="20,14" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+
+        <Border Background="#66000000"
+                Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <ProgressRing IsActive="True" Width="44" Height="44" />
+                <TextBlock Text="{Binding BusyText}" Foreground="White" FontSize="16" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

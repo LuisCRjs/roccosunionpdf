@@ -1,0 +1,50 @@
+<Page
+    x:Name="RootPage"
+    x:Class="DocumentManager.WinUI.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Loaded="Page_Loaded">
+    <ScrollViewer Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel MaxWidth="760" Padding="40,32,40,48" HorizontalAlignment="Center" Spacing="24">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Configuración" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="Ajusta solamente el escáner y la ubicación de salida."
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <InfoBar IsOpen="{Binding HasError}" Severity="Error" Title="No se pudo guardar" Message="{Binding ErrorMessage}" />
+            <InfoBar IsOpen="{Binding HasSuccess}" Severity="Success" Message="{Binding SuccessMessage}" />
+
+            <Border Padding="24"
+                    CornerRadius="10"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <StackPanel Spacing="20">
+                    <ComboBox Header="Escáner predeterminado"
+                              PlaceholderText="Seleccionar al escanear"
+                              ItemsSource="{Binding Scanners}"
+                              SelectedItem="{Binding SelectedScanner, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              HorizontalAlignment="Stretch" />
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Header="Carpeta donde guardar expedientes"
+                                 Text="{Binding ExpedientsDirectory, Mode=TwoWay}" />
+                        <Button Grid.Column="1" Content="Examinar" Command="{Binding BrowseDirectoryCommand}" VerticalAlignment="Bottom" />
+                    </Grid>
+                    <Button Content="Guardar configuración"
+                            Command="{Binding SaveCommand}"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <ProgressRing IsActive="{Binding IsBusy}" Width="28" Height="28" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
+

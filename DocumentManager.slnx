@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DocumentManager.Core/DocumentManager.Core.csproj" />
+    <Project Path="src/DocumentManager.Infrastructure/DocumentManager.Infrastructure.csproj" />
+    <Project Path="src/DocumentManager.WinUI/DocumentManager.WinUI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DocumentManager.Tests/DocumentManager.Tests.csproj" />
+    <Project Path="tests/DocumentManager.WindowsCodeCheck/DocumentManager.WindowsCodeCheck.csproj" />
+  </Folder>
+</Solution>

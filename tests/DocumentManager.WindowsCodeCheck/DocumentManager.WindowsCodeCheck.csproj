@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <GenerateProjectPriFile>false</GenerateProjectPriFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/DocumentManager.Core/DocumentManager.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../src/DocumentManager.WinUI/Services/WindowsScannerService.cs"
+             Link="WindowsScannerService.cs" />
+  </ItemGroup>
+</Project>

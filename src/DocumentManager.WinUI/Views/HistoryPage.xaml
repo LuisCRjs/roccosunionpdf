@@ -1,0 +1,80 @@
+<Page
+    x:Name="RootPage"
+    x:Class="DocumentManager.WinUI.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:viewModels="using:DocumentManager.WinUI.ViewModels"
+    Loaded="Page_Loaded">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid MaxWidth="1040" Padding="40,32,40,40" HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Spacing="6">
+                <TextBlock Text="Historial" Style="{ThemeResource TitleTextBlockStyle}" />
+                <TextBlock Text="Busca y abre expedientes generados anteriormente."
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <InfoBar Grid.Row="1" Margin="0,18,0,0"
+                     IsOpen="{Binding HasError}"
+                     Severity="Error"
+                     Title="No se pudo cargar el historial"
+                     Message="{Binding ErrorMessage}" />
+
+            <StackPanel Grid.Row="2" Margin="0,20,0,16" Orientation="Horizontal" Spacing="8">
+                <TextBox Width="360"
+                         PlaceholderText="Folio interno u orden de servicio"
+                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Buscar" Command="{Binding SearchCommand}" Style="{ThemeResource AccentButtonStyle}" />
+                <ProgressRing Width="24" Height="24" IsActive="{Binding IsBusy}" />
+            </StackPanel>
+
+            <Border Grid.Row="3"
+                    CornerRadius="10"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid Padding="18,12" Background="{ThemeResource SubtleFillColorSecondaryBrush}" ColumnSpacing="18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="1.4*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Folio interno" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="1" Text="Folio orden de servicio" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="2" Text="Fecha" FontWeight="SemiBold" />
+                        <TextBlock Grid.Column="3" Text="PDF" FontWeight="SemiBold" />
+                    </Grid>
+                    <ListView Grid.Row="1" ItemsSource="{Binding Records}" SelectionMode="None" HorizontalContentAlignment="Stretch">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:HistoryItemViewModel">
+                                <Grid Padding="10" ColumnSpacing="18">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="90" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind InternalFolio}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ServiceOrderFolio}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind Date, Converter={StaticResource DateToStringConverter}}" VerticalAlignment="Center" />
+                                    <Button Grid.Column="3" Content="Abrir" Command="{x:Bind OpenCommand}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>
