@@ -1,6 +1,7 @@
 using DocumentManager.Core.Models;
 using DocumentManager.Infrastructure.Data;
 using DocumentManager.Infrastructure.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocumentManager.Tests;
@@ -57,6 +58,7 @@ public sealed class RecordServiceTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
+        SqliteConnection.ClearAllPools();
         Directory.Delete(temporaryDirectory, recursive: true);
         return Task.CompletedTask;
     }

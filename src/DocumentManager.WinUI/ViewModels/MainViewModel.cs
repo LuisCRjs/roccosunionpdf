@@ -77,29 +77,29 @@ public sealed partial class MainViewModel : ObservableObject
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     [ObservableProperty]
-    private DateTime date = DateTime.Today;
+    public partial DateTime Date { get; set; } = DateTime.Today;
 
     [ObservableProperty]
-    private string serviceOrderFolio = string.Empty;
+    public partial string ServiceOrderFolio { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string internalFolio = "Preparando...";
+    public partial string InternalFolio { get; set; } = "Preparando...";
 
     [ObservableProperty]
-    private bool isBusy;
+    public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
-    private string busyText = string.Empty;
+    public partial string BusyText { get; set; } = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
-    private string? errorMessage;
+    public partial string? ErrorMessage { get; set; }
 
     [ObservableProperty]
-    private bool isCompleted;
+    public partial bool IsCompleted { get; set; }
 
     [ObservableProperty]
-    private string? generatedPdfPath;
+    public partial string? GeneratedPdfPath { get; set; }
 
     public async Task InitializeAsync()
     {

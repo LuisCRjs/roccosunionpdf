@@ -47,15 +47,15 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsReady))]
     [NotifyPropertyChangedFor(nameof(FileName))]
     [NotifyPropertyChangedFor(nameof(StatusText))]
-    private string? filePath;
+    public partial string? FilePath { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
     [NotifyPropertyChangedFor(nameof(CanInteract))]
-    private bool isBusy;
+    public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
-    private bool isTemporary;
+    public partial bool IsTemporary { get; set; }
 
     public void SetFile(string path, bool temporary)
     {

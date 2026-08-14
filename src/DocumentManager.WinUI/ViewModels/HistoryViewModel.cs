@@ -17,14 +17,14 @@ public sealed partial class HistoryViewModel(
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
     [ObservableProperty]
-    private string searchText = string.Empty;
+    public partial string SearchText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool isBusy;
+    public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
-    private string? errorMessage;
+    public partial string? ErrorMessage { get; set; }
 
     public Task InitializeAsync() => SearchAsync();
 

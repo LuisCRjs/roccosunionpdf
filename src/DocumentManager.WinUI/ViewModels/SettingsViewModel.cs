@@ -21,21 +21,21 @@ public sealed partial class SettingsViewModel(
     public bool HasSuccess => !string.IsNullOrWhiteSpace(SuccessMessage);
 
     [ObservableProperty]
-    private ScannerDevice? selectedScanner;
+    public partial ScannerDevice? SelectedScanner { get; set; }
 
     [ObservableProperty]
-    private string expedientsDirectory = string.Empty;
+    public partial string ExpedientsDirectory { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private bool isBusy;
+    public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
-    private string? errorMessage;
+    public partial string? ErrorMessage { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSuccess))]
-    private string? successMessage;
+    public partial string? SuccessMessage { get; set; }
 
     public async Task InitializeAsync()
     {
