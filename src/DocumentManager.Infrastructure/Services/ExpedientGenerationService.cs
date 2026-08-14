@@ -17,13 +17,15 @@ public sealed class ExpedientGenerationService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var validation = validator.Validate(request.ServiceOrderFolio, request.Documents);
+        var validation = validator.Validate(
+            request.ServiceOrderFolio,
+            request.EconomicNumber,
+            request.Documents);
         if (!validation.IsValid)
         {
             throw new InvalidOperationException(string.Join(Environment.NewLine, validation.Errors));
         }
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.InternalFolio);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DestinationDirectory);
 
         var orderedDocuments = DocumentOrder.Sort(request.Documents);
@@ -42,28 +44,24 @@ public sealed class ExpedientGenerationService(
 
             var normalizedPath = Path.Combine(
                 fileService.TempDirectory,
-                $"{request.InternalFolio}-{(int)document.Type}-{Guid.NewGuid():N}.pdf");
+                $"document-{(int)document.Type}-{Guid.NewGuid():N}.pdf");
             await pdfService.ConvertImagesToPdfAsync([document.SourcePath], normalizedPath, cancellationToken);
             generatedTemporaryPdfs.Add(normalizedPath);
             normalizedPdfs.Add(normalizedPath);
         }
 
         var finalFileName = fileNameBuilder.Build(
-            request.InternalFolio.Trim(),
+            request.EconomicNumber.Trim(),
             request.ServiceOrderFolio.Trim());
         var finalPath = Path.Combine(request.DestinationDirectory, finalFileName);
 
         await pdfService.MergeAsync(normalizedPdfs, finalPath, cancellationToken);
 
-        var record = new ServiceRecord
-        {
-            Date = request.Date.Date,
-            ServiceOrderFolio = request.ServiceOrderFolio.Trim(),
-            InternalFolio = request.InternalFolio.Trim(),
-            FinalPdfPath = finalPath,
-        };
-
-        await recordService.CreateAsync(record, cancellationToken);
+        var record = await recordService.CreateWithNextInternalFolioAsync(
+            request.Date,
+            request.ServiceOrderFolio,
+            finalPath,
+            cancellationToken);
 
         var ownedTemporaryFiles = orderedDocuments
             .Where(document => document.IsTemporary)
@@ -74,4 +72,3 @@ public sealed class ExpedientGenerationService(
         return new ExpedientGenerationResult(record, finalPath);
     }
 }
-

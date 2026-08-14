@@ -13,7 +13,7 @@ public sealed class ExpedientValidatorTests : IDisposable
     public void Validate_AcceptsCompleteExpedient()
     {
         var documents = CreateDocuments();
-        var result = new ExpedientValidator().Validate("OS-5812", documents);
+        var result = new ExpedientValidator().Validate("OS-5812", "123", documents);
         Assert.True(result.IsValid);
         Assert.Empty(result.Errors);
     }
@@ -21,9 +21,9 @@ public sealed class ExpedientValidatorTests : IDisposable
     [Fact]
     public void Validate_RejectsEmptyFolioAndMissingDocuments()
     {
-        var result = new ExpedientValidator().Validate(" ", []);
+        var result = new ExpedientValidator().Validate(" ", " ", []);
         Assert.False(result.IsValid);
-        Assert.Equal(5, result.Errors.Count);
+        Assert.Equal(6, result.Errors.Count);
     }
 
     private IReadOnlyList<DocumentInput> CreateDocuments() =>
@@ -36,4 +36,3 @@ public sealed class ExpedientValidatorTests : IDisposable
 
     public void Dispose() => Directory.Delete(temporaryDirectory, recursive: true);
 }
-

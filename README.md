@@ -1,5 +1,7 @@
 # Gestor de Expedientes
 
+Versión actual: **1.02**
+
 Aplicación de escritorio local para Windows 11 que reúne cuatro documentos en un único PDF, siempre en este orden:
 
 1. Orden de servicio
@@ -46,6 +48,14 @@ Documentos/GestorExpedientes/
 
 SQLite solo almacena la fecha, los dos folios y la ruta final. Los PDF nunca se guardan como BLOB. La carpeta de salida de expedientes se puede cambiar desde Configuración; la base de datos y los temporales permanecen en la ubicación local predecible.
 
+El número económico se captura al crear el expediente y se utiliza, junto con el folio de la orden de servicio, para generar nombres como:
+
+```text
+REPORTE MANTENIMIENTO EXTERNO123 OS-5812.pdf
+```
+
+El folio interno mostrado es una vista previa. La secuencia de SQLite solamente avanza cuando el PDF ya fue generado y el registro se guarda correctamente.
+
 ## Abrir en Visual Studio
 
 Requisitos en Windows 11:
@@ -88,4 +98,3 @@ DOTNET_COMMAND=/ruta/a/dotnet ./scripts/verify-portable.sh
 ```
 
 La compilación, ejecución visual, prueba con escáner físico y publicación del `.exe` deben realizarse finalmente en Windows 11.
-

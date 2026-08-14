@@ -23,38 +23,55 @@ public sealed class RecordServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ReserveNextInternalFolioAsync_IsMonotonicAndDoesNotUseRecordCount()
+    public async Task GetNextInternalFolioAsync_DoesNotConsumeSequence()
     {
-        Assert.Equal("EXP-000001", await service.ReserveNextInternalFolioAsync());
-        Assert.Equal("EXP-000002", await service.ReserveNextInternalFolioAsync());
+        Assert.Equal("EXP-000001", await service.GetNextInternalFolioAsync());
+        Assert.Equal("EXP-000001", await service.GetNextInternalFolioAsync());
         Assert.Empty(await service.SearchAsync(null));
-        Assert.Equal("EXP-000003", await service.ReserveNextInternalFolioAsync());
+    }
+
+    [Fact]
+    public async Task CreateWithNextInternalFolioAsync_IncrementsSequenceAndCreatesRecordAtomically()
+    {
+        var first = await service.CreateWithNextInternalFolioAsync(
+            new DateTime(2026, 8, 13),
+            "OS-100",
+            "C:\\Expedientes\\primero.pdf");
+
+        Assert.Equal("EXP-000001", first.InternalFolio);
+        Assert.Equal("EXP-000002", await service.GetNextInternalFolioAsync());
+
+        var second = await service.CreateWithNextInternalFolioAsync(
+            new DateTime(2026, 8, 14),
+            "OS-200",
+            "C:\\Expedientes\\segundo.pdf");
+
+        Assert.Equal("EXP-000002", second.InternalFolio);
+        Assert.Equal(2, (await service.SearchAsync(null)).Count);
     }
 
     [Fact]
     public async Task SearchAsync_FindsBothFolioTypesAndSortsNewestFirst()
     {
-        await service.CreateAsync(CreateRecord("EXP-000010", "OS-100", new DateTime(2026, 8, 13)));
-        await service.CreateAsync(CreateRecord("EXP-000011", "OS-200", new DateTime(2026, 8, 14)));
+        await service.CreateWithNextInternalFolioAsync(
+            new DateTime(2026, 8, 13),
+            "OS-100",
+            "C:\\Expedientes\\primero.pdf");
+        await service.CreateWithNextInternalFolioAsync(
+            new DateTime(2026, 8, 14),
+            "OS-200",
+            "C:\\Expedientes\\segundo.pdf");
 
         var all = await service.SearchAsync(null);
-        var byInternal = await service.SearchAsync("000010");
+        var byInternal = await service.SearchAsync("000001");
         var byServiceOrder = await service.SearchAsync("os-200");
 
-        Assert.Equal("EXP-000011", all[0].InternalFolio);
+        Assert.Equal("EXP-000002", all[0].InternalFolio);
         Assert.Single(byInternal);
         Assert.Equal("OS-100", byInternal[0].ServiceOrderFolio);
         Assert.Single(byServiceOrder);
-        Assert.Equal("EXP-000011", byServiceOrder[0].InternalFolio);
+        Assert.Equal("EXP-000002", byServiceOrder[0].InternalFolio);
     }
-
-    private static ServiceRecord CreateRecord(string internalFolio, string osFolio, DateTime date) => new()
-    {
-        Date = date,
-        InternalFolio = internalFolio,
-        ServiceOrderFolio = osFolio,
-        FinalPdfPath = $"C:\\Expedientes\\{internalFolio}.pdf",
-    };
 
     public Task DisposeAsync()
     {

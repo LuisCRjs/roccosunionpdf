@@ -72,6 +72,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool CanGenerate =>
         !IsBusy &&
         !string.IsNullOrWhiteSpace(ServiceOrderFolio) &&
+        !string.IsNullOrWhiteSpace(EconomicNumber) &&
         Documents.All(document => document.IsReady && !document.IsBusy);
 
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -81,6 +82,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string ServiceOrderFolio { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string EconomicNumber { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial string InternalFolio { get; set; } = "Preparando...";
@@ -114,6 +118,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     partial void OnServiceOrderFolioChanged(string value) => GenerateCommand.NotifyCanExecuteChanged();
 
+    partial void OnEconomicNumberChanged(string value) => GenerateCommand.NotifyCanExecuteChanged();
+
     partial void OnIsBusyChanged(bool value) => GenerateCommand.NotifyCanExecuteChanged();
 
     [RelayCommand(CanExecute = nameof(CanGenerate))]
@@ -134,10 +140,11 @@ public sealed partial class MainViewModel : ObservableObject
             var result = await generationService.GenerateAsync(new ExpedientGenerationRequest(
                 Date,
                 ServiceOrderFolio,
-                InternalFolio,
+                EconomicNumber,
                 inputs,
                 destination));
 
+            InternalFolio = result.Record.InternalFolio;
             GeneratedPdfPath = result.FinalPdfPath;
             ownedTemporaryFiles.Clear();
             IsCompleted = true;
@@ -162,6 +169,7 @@ public sealed partial class MainViewModel : ObservableObject
         IsCompleted = false;
         GeneratedPdfPath = null;
         ServiceOrderFolio = string.Empty;
+        EconomicNumber = string.Empty;
         Date = DateTime.Today;
         OnPropertyChanged(nameof(DateText));
         foreach (var slot in Documents)
@@ -175,7 +183,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             await fileService.EnsureDirectoriesAsync();
             await recordService.InitializeAsync();
-            InternalFolio = await recordService.ReserveNextInternalFolioAsync();
+            InternalFolio = await recordService.GetNextInternalFolioAsync();
         }
         catch (Exception exception)
         {

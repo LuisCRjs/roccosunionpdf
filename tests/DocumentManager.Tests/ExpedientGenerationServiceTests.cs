@@ -42,12 +42,13 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
         var result = await sut.GenerateAsync(new ExpedientGenerationRequest(
             new DateTime(2026, 8, 14, 18, 30, 0),
             "OS:5812",
-            "EXP-000123",
+            "4521",
             documents,
             outputDirectory));
 
-        Assert.Equal("EXP-000123_OS_5812.pdf", Path.GetFileName(result.FinalPdfPath));
+        Assert.Equal("REPORTE MANTENIMIENTO EXTERNO4521 OS_5812.pdf", Path.GetFileName(result.FinalPdfPath));
         Assert.Single(records.Records);
+        Assert.Equal("EXP-000001", result.Record.InternalFolio);
         Assert.Equal(new DateTime(2026, 8, 14), records.Records[0].Date);
 
         using var merged = PdfSharp.Pdf.IO.PdfReader.Open(
@@ -78,12 +79,23 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
 
         public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-        public Task<string> ReserveNextInternalFolioAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult("EXP-000001");
+        public Task<string> GetNextInternalFolioAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(FolioFormatter.Format(Records.Count + 1));
 
-        public Task<ServiceRecord> CreateAsync(ServiceRecord record, CancellationToken cancellationToken = default)
+        public Task<ServiceRecord> CreateWithNextInternalFolioAsync(
+            DateTime date,
+            string serviceOrderFolio,
+            string finalPdfPath,
+            CancellationToken cancellationToken = default)
         {
-            record.Id = Records.Count + 1;
+            var record = new ServiceRecord
+            {
+                Id = Records.Count + 1,
+                Date = date.Date,
+                ServiceOrderFolio = serviceOrderFolio.Trim(),
+                InternalFolio = FolioFormatter.Format(Records.Count + 1),
+                FinalPdfPath = finalPdfPath,
+            };
             Records.Add(record);
             return Task.FromResult(record);
         }

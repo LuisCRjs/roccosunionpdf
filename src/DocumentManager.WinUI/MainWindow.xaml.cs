@@ -10,7 +10,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "Gestor de expedientes";
+        Title = "Gestor de expedientes 1.02";
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1180, 820));
         Navigation.SelectedItem = Navigation.MenuItems[0];
         ContentFrame.Navigate(typeof(MainPage));
@@ -47,4 +47,3 @@ public sealed partial class MainWindow : Window
         }
     }
 }
-

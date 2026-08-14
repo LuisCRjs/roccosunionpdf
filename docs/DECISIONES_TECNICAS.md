@@ -24,7 +24,7 @@ WHERE Id = 1
 RETURNING LastValue;
 ```
 
-La sentencia corre dentro de una transacción serializable. No depende del número de registros ni reutiliza folios eliminados. Una reserva abandonada puede dejar un salto, lo cual es preferible a duplicar un identificador. `ServiceRecords.InternalFolio` también tiene un índice único como defensa final.
+La pantalla consulta `LastValue + 1` únicamente como vista previa, sin modificar la secuencia. Después de generar correctamente el PDF, la actualización anterior y la inserción de `ServiceRecord` corren dentro de la misma transacción serializable. Si el registro falla, el incremento también se revierte. No depende del número de registros ni reutiliza folios eliminados. `ServiceRecords.InternalFolio` también tiene un índice único como defensa final.
 
 ## Escritura de PDF
 
@@ -36,4 +36,3 @@ PDFsharp escribe primero a un archivo parcial con nombre único. Solo después d
 - WIA requiere Windows y un dispositivo/driver físico.
 - La modalidad EXE único se produce con `dotnet publish` en Windows.
 - En Fedora se verifican Core, Infrastructure, ViewModels, XML bien formado y compilación de las APIs de escáner contra el contrato Windows 10.0.26100.
-

@@ -20,8 +20,27 @@ public sealed class RecordService(IDbContextFactory<AppDbContext> contextFactory
             cancellationToken);
     }
 
-    public async Task<string> ReserveNextInternalFolioAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetNextInternalFolioAsync(CancellationToken cancellationToken = default)
     {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var nextValue = await context.FolioSequences
+            .AsNoTracking()
+            .Where(sequence => sequence.Id == 1)
+            .Select(sequence => sequence.LastValue + 1)
+            .SingleAsync(cancellationToken);
+
+        return FolioFormatter.Format(nextValue);
+    }
+
+    public async Task<ServiceRecord> CreateWithNextInternalFolioAsync(
+        DateTime date,
+        string serviceOrderFolio,
+        string finalPdfPath,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(serviceOrderFolio);
+        ArgumentException.ThrowIfNullOrWhiteSpace(finalPdfPath);
+
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         await context.Database.OpenConnectionAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(
@@ -39,19 +58,16 @@ public sealed class RecordService(IDbContextFactory<AppDbContext> contextFactory
         }
 
         var sequence = Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
-        await transaction.CommitAsync(cancellationToken);
-        return FolioFormatter.Format(sequence);
-    }
-
-    public async Task<ServiceRecord> CreateAsync(
-        ServiceRecord record,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(record);
-
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        var record = new ServiceRecord
+        {
+            Date = date.Date,
+            ServiceOrderFolio = serviceOrderFolio.Trim(),
+            InternalFolio = FolioFormatter.Format(sequence),
+            FinalPdfPath = finalPdfPath,
+        };
         context.ServiceRecords.Add(record);
         await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return record;
     }
 

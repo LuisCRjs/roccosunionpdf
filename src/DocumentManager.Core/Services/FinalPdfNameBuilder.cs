@@ -5,14 +5,14 @@ public sealed class FinalPdfNameBuilder
     private static readonly HashSet<char> InvalidFileNameCharacters =
         Path.GetInvalidFileNameChars().Concat(['<', '>', ':', '"', '/', '\\', '|', '?', '*']).ToHashSet();
 
-    public string Build(string internalFolio, string serviceOrderFolio)
+    public string Build(string economicNumber, string serviceOrderFolio)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(internalFolio);
+        ArgumentException.ThrowIfNullOrWhiteSpace(economicNumber);
         ArgumentException.ThrowIfNullOrWhiteSpace(serviceOrderFolio);
 
-        var safeInternalFolio = SanitizeSegment(internalFolio);
+        var safeEconomicNumber = SanitizeSegment(economicNumber);
         var safeServiceOrderFolio = SanitizeSegment(serviceOrderFolio);
-        return $"{safeInternalFolio}_{safeServiceOrderFolio}.pdf";
+        return $"REPORTE MANTENIMIENTO EXTERNO{safeEconomicNumber} {safeServiceOrderFolio}.pdf";
     }
 
     public string SanitizeSegment(string value)
@@ -32,4 +32,3 @@ public sealed class FinalPdfNameBuilder
         return sanitized;
     }
 }
-

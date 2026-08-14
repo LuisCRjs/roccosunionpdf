@@ -3,7 +3,7 @@ namespace DocumentManager.Core.Models;
 public sealed record ExpedientGenerationRequest(
     DateTime Date,
     string ServiceOrderFolio,
-    string InternalFolio,
+    string EconomicNumber,
     IReadOnlyCollection<DocumentInput> Documents,
     string DestinationDirectory);
 
@@ -15,4 +15,3 @@ public sealed record ValidationResult(bool IsValid, IReadOnlyList<string> Errors
 {
     public static ValidationResult Success { get; } = new(true, []);
 }
-

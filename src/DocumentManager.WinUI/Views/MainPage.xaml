@@ -33,6 +33,10 @@
                                        HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding InternalFolio}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
                             <TextBlock Text="{Binding ServiceOrderFolio}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="Número económico: " Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding EconomicNumber}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                                 <Button Content="Abrir PDF" Command="{Binding OpenGeneratedCommand}" Style="{ThemeResource AccentButtonStyle}" />
                                 <Button Content="Nuevo expediente" Command="{Binding StartNewCommand}" />
@@ -47,8 +51,9 @@
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1">
-                            <Grid ColumnSpacing="24" RowSpacing="8">
+                            <Grid ColumnSpacing="20" RowSpacing="8">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
@@ -58,11 +63,16 @@
                                          PlaceholderText="Ej. OS-5812"
                                          MaxLength="100"
                                          Text="{Binding ServiceOrderFolio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <StackPanel Grid.Column="1" Spacing="7">
+                                <TextBox Grid.Column="1"
+                                         Header="Número económico de la unidad"
+                                         PlaceholderText="Ej. 123"
+                                         MaxLength="50"
+                                         Text="{Binding EconomicNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <StackPanel Grid.Column="2" Spacing="7">
                                     <TextBlock Text="Folio interno" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock Text="{Binding InternalFolio}" FontSize="18" FontWeight="SemiBold" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="2" Spacing="7">
+                                <StackPanel Grid.Column="3" Spacing="7">
                                     <TextBlock Text="Fecha" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBlock Text="{Binding DateText}" FontSize="18" FontWeight="SemiBold" />
                                 </StackPanel>

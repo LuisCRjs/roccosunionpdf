@@ -6,6 +6,7 @@ public sealed class ExpedientValidator
 {
     public ValidationResult Validate(
         string? serviceOrderFolio,
+        string? economicNumber,
         IEnumerable<DocumentInput> documents)
     {
         var errors = new List<string>();
@@ -13,6 +14,11 @@ public sealed class ExpedientValidator
         if (string.IsNullOrWhiteSpace(serviceOrderFolio))
         {
             errors.Add("Escribe el folio de la orden de servicio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(economicNumber))
+        {
+            errors.Add("Escribe el número económico de la unidad.");
         }
 
         var materialized = documents?.ToArray() ?? [];
@@ -47,4 +53,3 @@ public sealed class ExpedientValidator
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 }
-
