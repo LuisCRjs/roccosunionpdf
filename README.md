@@ -1,6 +1,6 @@
 # Gestor de Expedientes
 
-Versión actual: **1.03**
+Versión actual: **1.03.1**
 
 Aplicación de escritorio local para Windows 11 que reúne cuatro tipos de documento en un único PDF, siempre en este orden:
 
