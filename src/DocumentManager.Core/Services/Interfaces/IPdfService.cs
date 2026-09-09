@@ -4,6 +4,8 @@ public interface IPdfService
 {
     Task ValidatePdfAsync(string path, CancellationToken cancellationToken = default);
 
+    Task ValidateImageAsync(string path, CancellationToken cancellationToken = default);
+
     Task ConvertImagesToPdfAsync(
         IReadOnlyList<string> imagePaths,
         string destinationPdfPath,
@@ -14,4 +16,3 @@ public interface IPdfService
         string destinationPdfPath,
         CancellationToken cancellationToken = default);
 }
-

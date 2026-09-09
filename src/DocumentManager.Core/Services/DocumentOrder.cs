@@ -19,14 +19,14 @@ public static class DocumentOrder
         var materialized = documents.ToArray();
         var duplicates = materialized
             .GroupBy(document => document.Type)
-            .Where(group => group.Key != DocumentType.Quote && group.Count() > 1)
+            .Where(group => !AllowsMultipleFiles(group.Key) && group.Count() > 1)
             .Select(group => group.Key)
             .ToArray();
 
         if (duplicates.Length > 0)
         {
             throw new ArgumentException(
-                "Solo la cotización puede contener varios archivos.",
+                "El reporte de mantenimiento solo puede contener un archivo.",
                 nameof(documents));
         }
 
@@ -40,4 +40,10 @@ public static class DocumentOrder
             .SelectMany(type => materialized.Where(document => document.Type == type))
             .ToArray();
     }
+
+    public static bool AllowsMultipleFiles(DocumentType type) => type is
+        DocumentType.ServiceOrder or DocumentType.WorkOrder or DocumentType.Quote;
+
+    public static bool AllowsImages(DocumentType type) => type is
+        DocumentType.ServiceOrder or DocumentType.WorkOrder;
 }

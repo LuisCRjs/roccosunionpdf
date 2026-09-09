@@ -5,17 +5,27 @@ namespace DocumentManager.WinUI.Services;
 
 public sealed class WindowsFilePickerService : IFilePickerService
 {
-    public async Task<IReadOnlyList<string>> PickPdfsAsync(
+    public async Task<IReadOnlyList<string>> PickFilesAsync(
         bool allowMultiple,
+        IReadOnlyCollection<string> allowedExtensions,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(allowedExtensions);
+        if (allowedExtensions.Count == 0)
+        {
+            throw new ArgumentException("Se requiere al menos un formato permitido.", nameof(allowedExtensions));
+        }
+
         cancellationToken.ThrowIfCancellationRequested();
         var picker = new FileOpenPicker
         {
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
             ViewMode = PickerViewMode.List,
         };
-        picker.FileTypeFilter.Add(".pdf");
+        foreach (var extension in allowedExtensions)
+        {
+            picker.FileTypeFilter.Add(extension);
+        }
         WinRT.Interop.InitializeWithWindow.Initialize(picker, App.WindowHandle);
 
         if (allowMultiple)

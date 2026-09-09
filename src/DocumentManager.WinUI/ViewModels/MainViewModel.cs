@@ -216,7 +216,9 @@ public sealed partial class MainViewModel : ObservableObject
         slot.IsBusy = true;
         try
         {
-            var paths = await filePickerService.PickPdfsAsync(slot.AllowsMultipleFiles);
+            var paths = await filePickerService.PickFilesAsync(
+                slot.AllowsMultipleFiles,
+                slot.AllowedExtensions);
             if (paths.Count == 0)
             {
                 return;
@@ -224,7 +226,14 @@ public sealed partial class MainViewModel : ObservableObject
 
             foreach (var path in paths)
             {
-                await pdfService.ValidatePdfAsync(path);
+                if (string.Equals(Path.GetExtension(path), ".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    await pdfService.ValidatePdfAsync(path);
+                }
+                else
+                {
+                    await pdfService.ValidateImageAsync(path);
+                }
             }
 
             if (slot.AllowsMultipleFiles)

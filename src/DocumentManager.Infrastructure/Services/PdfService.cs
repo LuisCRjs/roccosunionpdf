@@ -13,6 +13,9 @@ public sealed class PdfService : IPdfService
     public Task ValidatePdfAsync(string path, CancellationToken cancellationToken = default) =>
         Task.Run(() => ValidatePdf(path, cancellationToken), cancellationToken);
 
+    public Task ValidateImageAsync(string path, CancellationToken cancellationToken = default) =>
+        Task.Run(() => ValidateImage(path, cancellationToken), cancellationToken);
+
     public Task ConvertImagesToPdfAsync(
         IReadOnlyList<string> imagePaths,
         string destinationPdfPath,
@@ -36,6 +39,17 @@ public sealed class PdfService : IPdfService
         if (document.PageCount == 0)
         {
             throw new InvalidDataException("El PDF no contiene páginas.");
+        }
+    }
+
+    private static void ValidateImage(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        EnsureSupportedImage(path);
+        using var image = XImage.FromFile(path);
+        if (image.PointWidth <= 0 || image.PointHeight <= 0)
+        {
+            throw new InvalidDataException("La imagen no tiene dimensiones válidas.");
         }
     }
 
@@ -185,4 +199,3 @@ public sealed class PdfService : IPdfService
         }
     }
 }
-
