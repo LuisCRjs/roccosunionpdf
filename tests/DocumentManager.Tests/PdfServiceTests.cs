@@ -38,20 +38,46 @@ public sealed class PdfServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ValidateImageAsync_AcceptsValidPng()
+    {
+        var path = await CreateOnePixelPngAsync("valid.png");
+
+        await new PdfService().ValidateImageAsync(path);
+    }
+
+    [Fact]
+    public async Task ValidateImageAsync_RejectsCorruptAndUnsupportedFiles()
+    {
+        var corruptPath = Path.Combine(temporaryDirectory, "corrupt.jpg");
+        var unsupportedPath = Path.Combine(temporaryDirectory, "unsupported.gif");
+        await File.WriteAllTextAsync(corruptPath, "not-an-image");
+        await File.WriteAllTextAsync(unsupportedPath, "not-an-image");
+        var sut = new PdfService();
+
+        await Assert.ThrowsAnyAsync<Exception>(() => sut.ValidateImageAsync(corruptPath));
+        await Assert.ThrowsAsync<InvalidDataException>(() => sut.ValidateImageAsync(unsupportedPath));
+    }
+
+    [Fact]
     public async Task ConvertImagesToPdfAsync_CreatesOnePagePerImage()
     {
-        const string onePixelPng =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
-        var first = Path.Combine(temporaryDirectory, "page-1.png");
-        var second = Path.Combine(temporaryDirectory, "page-2.png");
-        await File.WriteAllBytesAsync(first, Convert.FromBase64String(onePixelPng));
-        await File.WriteAllBytesAsync(second, Convert.FromBase64String(onePixelPng));
+        var first = await CreateOnePixelPngAsync("page-1.png");
+        var second = await CreateOnePixelPngAsync("page-2.png");
         var destination = Path.Combine(temporaryDirectory, "images.pdf");
 
         await new PdfService().ConvertImagesToPdfAsync([first, second], destination);
 
         using var result = PdfReader.Open(destination, PdfDocumentOpenMode.Import);
         Assert.Equal(2, result.PageCount);
+    }
+
+    private async Task<string> CreateOnePixelPngAsync(string fileName)
+    {
+        const string onePixelPng =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        var path = Path.Combine(temporaryDirectory, fileName);
+        await File.WriteAllBytesAsync(path, Convert.FromBase64String(onePixelPng));
+        return path;
     }
 
     private string CreatePdf(string fileName, params double[] pageWidths)

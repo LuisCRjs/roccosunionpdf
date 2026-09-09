@@ -53,15 +53,35 @@ public sealed class DocumentOrderTests
     }
 
     [Fact]
-    public void Sort_RejectsDuplicatesOutsideQuotes()
+    public void Sort_AllowsMultipleOrderFilesAndPreservesEachGroupsSelectionOrder()
     {
         DocumentInput[] documents =
         [
+            new(DocumentType.WorkOrder, "work-b.jpg"),
             new(DocumentType.ServiceOrder, "service-a.pdf"),
-            new(DocumentType.ServiceOrder, "service-b.pdf"),
+            new(DocumentType.Quote, "quote.pdf"),
+            new(DocumentType.WorkOrder, "work-a.pdf"),
+            new(DocumentType.MaintenanceReport, "report.pdf"),
+            new(DocumentType.ServiceOrder, "service-b.png"),
+        ];
+
+        var result = DocumentOrder.Sort(documents);
+
+        Assert.Equal(
+            ["service-a.pdf", "service-b.png", "work-b.jpg", "work-a.pdf", "quote.pdf", "report.pdf"],
+            result.Select(document => document.SourcePath));
+    }
+
+    [Fact]
+    public void Sort_RejectsMultipleMaintenanceReports()
+    {
+        DocumentInput[] documents =
+        [
+            new(DocumentType.ServiceOrder, "service.pdf"),
             new(DocumentType.WorkOrder, "work.pdf"),
             new(DocumentType.Quote, "quote.pdf"),
-            new(DocumentType.MaintenanceReport, "report.pdf"),
+            new(DocumentType.MaintenanceReport, "report-a.pdf"),
+            new(DocumentType.MaintenanceReport, "report-b.pdf"),
         ];
 
         Assert.Throws<ArgumentException>(() => DocumentOrder.Sort(documents));

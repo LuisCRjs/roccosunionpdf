@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DocumentManager.Core.Models;
+using DocumentManager.Core.Services;
 
 namespace DocumentManager.WinUI.ViewModels;
 
@@ -36,7 +37,11 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
 
     public string Title { get; }
 
-    public bool AllowsMultipleFiles => Type == DocumentType.Quote;
+    public bool AllowsMultipleFiles => DocumentOrder.AllowsMultipleFiles(Type);
+
+    public IReadOnlyCollection<string> AllowedExtensions => DocumentOrder.AllowsImages(Type)
+        ? [".pdf", ".png", ".jpg", ".jpeg"]
+        : [".pdf"];
 
     public string SelectButtonText => AllowsMultipleFiles ? "Seleccionar archivos" : "Seleccionar archivo";
 
@@ -52,7 +57,7 @@ public sealed partial class DocumentSlotViewModel : ObservableObject
     {
         0 => string.Empty,
         1 => Path.GetFileName(files[0].Path),
-        _ => $"{files.Count} cotizaciones: {string.Join(", ", files.Select(file => Path.GetFileName(file.Path)))}",
+        _ => $"{files.Count} archivos: {string.Join(", ", files.Select(file => Path.GetFileName(file.Path)))}",
     };
 
     public string StatusText => IsBusy

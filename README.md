@@ -56,7 +56,7 @@ REPORTE MANTENIMIENTO EXTERNO123 OS-5812.pdf
 
 El folio interno mostrado es una vista previa. La secuencia de SQLite solamente avanza cuando el PDF ya fue generado y el registro se guarda correctamente.
 
-La sección Cotización permite seleccionar varios PDF a la vez, agregar más archivos o anexar escaneos adicionales. Todas las cotizaciones se incorporan consecutivamente, conservando su orden de selección, antes del reporte de mantenimiento.
+Las secciones Orden de servicio y Orden de trabajo permiten seleccionar varios archivos PDF, PNG, JPG o JPEG a la vez, agregar más archivos o anexar escaneos adicionales. Cotización conserva la selección de varios PDF. Los archivos de cada sección se incorporan consecutivamente, conservando su orden de selección, y la salida siempre es un solo PDF.
 
 ## Abrir en Visual Studio
 

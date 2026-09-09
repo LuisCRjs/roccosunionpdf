@@ -40,6 +40,54 @@ public sealed class ExpedientValidatorTests : IDisposable
         Assert.Empty(result.Errors);
     }
 
+    [Fact]
+    public void Validate_AcceptsMultiplePdfAndImageFilesForOrders()
+    {
+        var documents = CreateDocuments().ToList();
+        var serviceImage = CreateFile("service-extra.PNG");
+        var workImage = CreateFile("work-extra.JpEg");
+        documents.Add(new DocumentInput(DocumentType.ServiceOrder, serviceImage));
+        documents.Add(new DocumentInput(DocumentType.WorkOrder, workImage));
+
+        var result = new ExpedientValidator().Validate("OS-5812", "123", documents);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void Validate_RejectsImagesForQuoteAndMaintenanceReport()
+    {
+        var documents = CreateDocuments().ToList();
+        documents.RemoveAll(document => document.Type is DocumentType.Quote or DocumentType.MaintenanceReport);
+        documents.Add(new DocumentInput(DocumentType.Quote, CreateFile("quote.png")));
+        documents.Add(new DocumentInput(DocumentType.MaintenanceReport, CreateFile("report.jpg")));
+
+        var result = new ExpedientValidator().Validate("OS-5812", "123", documents);
+
+        Assert.False(result.IsValid);
+        Assert.Equal(2, result.Errors.Count);
+    }
+
+    [Fact]
+    public void Validate_RejectsMultipleMaintenanceReports()
+    {
+        var documents = CreateDocuments().ToList();
+        documents.Add(new DocumentInput(DocumentType.MaintenanceReport, CreateFile("report-2.pdf")));
+
+        var result = new ExpedientValidator().Validate("OS-5812", "123", documents);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.Contains("duplicado", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string CreateFile(string fileName)
+    {
+        var path = Path.Combine(temporaryDirectory, fileName);
+        File.WriteAllText(path, "test");
+        return path;
+    }
+
     private IReadOnlyList<DocumentInput> CreateDocuments() =>
         DocumentOrder.Required.Select(type =>
         {

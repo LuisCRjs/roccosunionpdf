@@ -29,7 +29,7 @@ public sealed class ExpedientValidator
             {
                 errors.Add($"Falta el documento: {GetDisplayName(type)}.");
             }
-            else if (type != DocumentType.Quote && matches.Length > 1)
+            else if (!DocumentOrder.AllowsMultipleFiles(type) && matches.Length > 1)
             {
                 errors.Add($"El documento {GetDisplayName(type)} está duplicado.");
             }
@@ -39,11 +39,26 @@ public sealed class ExpedientValidator
             {
                 errors.Add($"No se encontró uno de los archivos de {GetDisplayName(type)}.");
             }
+            else if (matches.Any(document => !IsAllowedFormat(type, document.SourcePath)))
+            {
+                var formats = DocumentOrder.AllowsImages(type) ? "PDF, PNG, JPG o JPEG" : "PDF";
+                errors.Add($"Los archivos de {GetDisplayName(type)} deben estar en formato {formats}.");
+            }
         }
 
         return errors.Count == 0
             ? ValidationResult.Success
             : new ValidationResult(false, errors);
+    }
+
+    private static bool IsAllowedFormat(DocumentType type, string path)
+    {
+        var extension = Path.GetExtension(path);
+        return string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase) ||
+               DocumentOrder.AllowsImages(type) && extension is not null &&
+               (extension.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase));
     }
 
     public static string GetDisplayName(DocumentType type) => type switch

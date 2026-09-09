@@ -27,8 +27,10 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
             CreateDocument(DocumentType.Quote, 300, inputDirectory),
             CreateDocument(DocumentType.Quote, 350, inputDirectory),
             CreateDocument(DocumentType.ServiceOrder, 100, inputDirectory),
+            CreateImageDocument(DocumentType.ServiceOrder, "service-image.png", inputDirectory),
             CreateDocument(DocumentType.MaintenanceReport, 400, inputDirectory),
             CreateDocument(DocumentType.WorkOrder, 200, inputDirectory),
+            CreateDocument(DocumentType.WorkOrder, 250, inputDirectory),
         };
         var records = new InMemoryRecordService();
         var fileService = new FileService(storageDirectory);
@@ -58,7 +60,11 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
         var pageWidths = Enumerable.Range(0, merged.PageCount)
             .Select(index => merged.Pages[index].Width.Point)
             .ToArray();
-        Assert.Equal([100d, 200d, 300d, 350d, 400d], pageWidths);
+        Assert.Equal(7, pageWidths.Length);
+        Assert.Equal(100d, pageWidths[0]);
+        Assert.True(pageWidths[1] < 10, "La imagen de la orden de servicio debe ocupar la segunda página.");
+        Assert.Equal([200d, 250d, 300d, 350d, 400d], pageWidths[2..]);
+        Assert.Empty(Directory.EnumerateFiles(fileService.TempDirectory));
     }
 
     private static DocumentInput CreateDocument(DocumentType type, double pageWidth, string directory)
@@ -69,6 +75,15 @@ public sealed class ExpedientGenerationServiceTests : IDisposable
         page.Width = XUnit.FromPoint(pageWidth);
         page.Height = XUnit.FromPoint(300);
         document.Save(path);
+        return new DocumentInput(type, path);
+    }
+
+    private static DocumentInput CreateImageDocument(DocumentType type, string fileName, string directory)
+    {
+        const string onePixelPng =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+        var path = Path.Combine(directory, fileName);
+        File.WriteAllBytes(path, Convert.FromBase64String(onePixelPng));
         return new DocumentInput(type, path);
     }
 
